@@ -1,13 +1,26 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from poe_api_wrapper import AsyncPoeApi
 import asyncio
 
 app = Flask(__name__)
+CORS(app)
+
+# tokens = {
+#     'p-b': 'ToDAkUbHxfsHWu1fGpz_cA%3D%3D',
+#     'p-lat': 'afGkUC17qGhaRPWctFWPOT7Ryg7nPvCemYA8iICo7g%3D%3D',
+# }
+
+# tokens = {
+#     'p-b': 'ToDAkUbHxfsHWu1fGpz_cA%3D%3D',
+#     'p-lat': 'KVhlmpJfKhiMzrrUZfeuXHam%2Bznbd9nmls3BmDnLfw%3D%3D',
+# }
 
 tokens = {
     'p-b': 'ToDAkUbHxfsHWu1fGpz_cA%3D%3D',
-    'p-lat': 'afGkUC17qGhaRPWctFWPOT7Ryg7nPvCemYA8iICo7g%3D%3D',
+    'p-lat': 'KVhlmpJfKhiMzrrUZfeuXHam%2Bznbd9nmls3BmDnLfw%3D%3D',
 }
+
 
 async def send_message_to_bot(message, chatId=None, chatCode=None):
     client = await AsyncPoeApi(tokens=tokens).create()
