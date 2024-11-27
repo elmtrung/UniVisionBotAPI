@@ -1,0 +1,8 @@
+    Flask
+    flask-cors
+    pymongo
+    asyncio
+    bs4
+    aiofiles
+    nest_asyncio
+    rich

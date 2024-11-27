@@ -6,6 +6,7 @@ from datetime import datetime
 from poe_api_wrapper import AsyncPoeApi
 import asyncio
 
+
 app = Flask(__name__)
 CORS(app)
 
