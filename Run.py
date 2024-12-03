@@ -52,7 +52,7 @@ def add_conversation(user_Id):
 def add_pending_conversation(status, user_Id, fullName):
     pending_conversation = {
         "conversation_id": add_conversation(user_Id),
-        "status": status,
+        "status": "Pending",
         "FullName": fullName,
         "created_at": datetime.utcnow()
     }
