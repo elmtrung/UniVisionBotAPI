@@ -6,7 +6,6 @@ from datetime import datetime
 from poe_api_wrapper import AsyncPoeApi
 import asyncio
 
-
 app = Flask(__name__)
 CORS(app)
 
@@ -50,23 +49,23 @@ def add_conversation(user_Id):
     result = conversations.insert_one(conversation)
     return result.inserted_id
 
-def add_pending_conversation(status, user_Id):
+def add_pending_conversation(status, user_Id, fullName):
     pending_conversation = {
         "conversation_id": add_conversation(user_Id),
-        "Status": status,
-        "user_Id": user_Id,
+        "status": status,
+        "FullName": fullName,
         "created_at": datetime.utcnow()
     }
     pending_conversations.insert_one(pending_conversation)
     return pending_conversation["conversation_id"]
 
-def add_message(conversation_Id, message, sender):
+def add_message(conversation_Id, message, sender ,receiver):
     message_doc = {
         "status": 0,
         "message": message,
         "conversation_id": conversation_Id,
         "sender": sender,
-        "receiver": "672214299c167656b2dc0d5e",
+        "receiver": receiver,
         "created_at": datetime.utcnow()
     }
     messages.insert_one(message_doc)
@@ -91,14 +90,14 @@ def send_message():
 @app.route('/add_pending_conversation', methods=['POST'])
 def api_add_pending_conversation():
     data = request.json
-    conversation_id = add_pending_conversation(data['status'], data['user_Id'])
+    conversation_id = add_pending_conversation(data['status'], data['user_Id'], data['fullName'])
     return jsonify({"conversation_id": str(conversation_id)})
 
 @app.route('/add_message', methods=['POST'])
 def api_add_message():
     data = request.json
     print("data:", data)
-    add_message(data['conversationId'], data['message'], data['sender'])
+    add_message(data['conversationId'], data['message'], data['sender'], data['receiverId'])
     return jsonify({"status": "success"})
 
 if __name__ == '__main__':
