@@ -60,7 +60,7 @@ def add_pending_conversation(status, user_Id, fullName):
     pending_conversations.insert_one(pending_conversation)
     return pending_conversation["conversation_id"]
 
-def add_message(conversation_Id, message, sender ,receiver):
+def add_message(conversation_Id, message, sender, receiver):
     message_doc = {
         "status": 0,
         "message": message,
