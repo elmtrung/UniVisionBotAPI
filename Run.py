@@ -14,6 +14,7 @@ db = client['UniVisionBot']
 pending_conversations = db['PendingConversation']
 conversations = db['Conversation']
 messages = db['Message']
+visitor_collection = db['Visitor']
 
 tokens = {
     'p-b': 'ToDAkUbHxfsHWu1fGpz_cA%3D%3D',
@@ -99,6 +100,25 @@ def api_add_message():
     print("data:", data)
     add_message(data['conversationId'], data['message'], data['sender'], data['receiverId'])
     return jsonify({"status": "success"})
+
+@app.route('/visitor-count', methods=['GET'])
+def get_visitor_count():
+    visitor = visitor_collection.find_one()
+    if visitor:
+        return jsonify({'count': visitor['count']})
+    else:
+        return jsonify({'count': 0})
+
+@app.route('/update-visitor-count', methods=['POST'])
+def update_visitor_count():
+    visitor = visitor_collection.find_one()
+    if visitor:
+        new_count = visitor['count'] + 1
+        visitor_collection.update_one({}, {'$set': {'count': new_count}})
+    else:
+        new_count = 1
+        visitor_collection.insert_one({'count': new_count})
+    return jsonify({'count': new_count})
 
 if __name__ == '__main__':
     app.run(debug=True)
