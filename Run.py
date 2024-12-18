@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 from poe_api_wrapper import AsyncPoeApi
 import asyncio
 
@@ -15,6 +15,7 @@ pending_conversations = db['PendingConversation']
 conversations = db['Conversation']
 messages = db['Message']
 visitor_collection = db['Visitor']
+app_users = db['appUsers']
 
 tokens = {
     'p-b': 'ToDAkUbHxfsHWu1fGpz_cA%3D%3D',
@@ -105,20 +106,55 @@ def api_add_message():
 def get_visitor_count():
     visitor = visitor_collection.find_one()
     if visitor:
-        return jsonify({'count': visitor['count']})
+        return jsonify({'Count_Visitor': visitor['Count_Visitor']})
     else:
-        return jsonify({'count': 0})
+        return jsonify({'Count_Visitor': 0})
 
 @app.route('/update-visitor-count', methods=['POST'])
 def update_visitor_count():
     visitor = visitor_collection.find_one()
     if visitor:
-        new_count = visitor['count'] + 1
-        visitor_collection.update_one({}, {'$set': {'count': new_count}})
+        new_count = visitor['Count_Visitor'] + 1
+        visitor_collection.update_one({}, {'$set': {'Count_Visitor': new_count}})
     else:
         new_count = 1
-        visitor_collection.insert_one({'count': new_count})
-    return jsonify({'count': new_count})
+        visitor_collection.insert_one({'Count_Visitor': new_count})
+    return jsonify({'Count_Visitor': new_count})
+
+@app.route('/user-count', methods=['GET'])
+def get_user_count():
+    user_count = app_users.count_documents({})
+    return jsonify({'total_user' : user_count, 'total_users_last_30_days': user_count})
+
+@app.route('/new-user-count', methods=['GET'])
+def get_new_user_count():
+    days = request.args.get('days', default=30, type=int)
+    n_days_ago = datetime.utcnow() - timedelta(days=days)
+    new_user_count = app_users.count_documents({
+        "CreatedOn": {
+            "$gte": n_days_ago.isoformat() + "Z"
+        }
+    })
+    return jsonify({'new_users_last_n_days': new_user_count})
+
+@app.route('/get-ad-click', methods=['GET'])
+def get_ad_click():
+    visitor = visitor_collection.find_one()
+    if visitor and 'AD_Click' in visitor:
+        return jsonify({'AD_Click': visitor['AD_Click']})
+    else:
+        return jsonify({'AD_Click': 0})
+
+@app.route('/set-ad-click', methods=['POST'])
+def set_ad_click():
+    visitor = visitor_collection.find_one()
+    if visitor and 'AD_Click' in visitor:
+        new_ad_click_count = visitor['AD_Click'] + 1
+        visitor_collection.update_one({}, {'$set': {'AD_Click': new_ad_click_count}})
+    else:
+        new_ad_click_count = 1
+        visitor_collection.insert_one({'AD_Click': new_ad_click_count})
+    return jsonify({'AD_Click': new_ad_click_count})
 
 if __name__ == '__main__':
     app.run(debug=True)
