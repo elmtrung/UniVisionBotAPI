@@ -5,7 +5,7 @@ from bson import ObjectId
 from datetime import datetime, timedelta
 from poe_api_wrapper import AsyncPoeApi
 import asyncio
-
+import requests
 app = Flask(__name__)
 CORS(app)
 
@@ -17,20 +17,20 @@ messages = db['Message']
 visitor_collection = db['Visitor']
 app_users = db['appUsers']
 
+# tokens = {
+#     'p-b': 'ToDAkUbHxfsHWu1fGpz_cA%3D%3D',
+#     'p-lat': 'afGkUC17qGhaRPWctFWPOT7Ryg7nPvCemYA8iICo7g%3D%3D',
+# }
+
 tokens = {
-    'p-b': 'ToDAkUbHxfsHWu1fGpz_cA%3D%3D',
-    'p-lat': 'afGkUC17qGhaRPWctFWPOT7Ryg7nPvCemYA8iICo7g%3D%3D',
+    'p-b': 'iOVFeQwIx-o_FJ81yRbYGw%3D%3D',
+    'p-lat': 'xJgVOZVXrN4b0HCALLUzvi22WVBQovclTR0SuhqnXw%3D%3D',
 }
-
 # tokens = {
 #     'p-b': 'ToDAkUbHxfsHWu1fGpz_cA%3D%3D',
-#     'p-lat': 'KVhlmpJfKhiMzrrUZfeuXHam%2Bznbd9nmls3BmDnLfw%3D%3D',
+#     'p-lat': 'UknZG4i92rDKkkVbSSwnQSUReu2yW%2FoRlee73XKn8g%3D%3D',
 # }
 
-# tokens = {
-#     'p-b': 'ToDAkUbHxfsHWu1fGpz_cA%3D%3D',
-#     'p-lat': 'KVhlmpJfKhiMzrrUZfeuXHam%2Bznbd9nmls3BmDnLfw%3D%3D',
-# }
 
 
 async def send_message_to_bot(message, chatId=None, chatCode=None):
@@ -43,32 +43,44 @@ async def send_message_to_bot(message, chatId=None, chatCode=None):
     return response, chatId, chatCode
 
 def add_conversation(user_Id):
+    now = datetime.utcnow()
+    microseconds = now.microsecond
+    microseconds = f"{microseconds:06d}"  
+    microseconds = microseconds + '7'
     conversation = {
-        "consutant_Id": '672214299c167656b2dc0d5e',
+        "consultant_Id": '672214299c167656b2dc0d5b',
         "user_Id": user_Id,
-        "created_at": datetime.utcnow()
+        "created_at": now.strftime(f"%Y-%m-%dT%H:%M:%S.{microseconds}Z")
     }
     result = conversations.insert_one(conversation)
     return result.inserted_id
 
 def add_pending_conversation(status, user_Id, fullName):
+    now = datetime.utcnow()
+    microseconds = now.microsecond
+    microseconds = f"{microseconds:06d}"  
+    microseconds = microseconds + '7'
     pending_conversation = {
-        "conversation_id": add_conversation(user_Id),
+        "conversationId": add_conversation(user_Id),
         "status": "Pending",
-        "FullName": fullName,
-        "created_at": datetime.utcnow()
+        "fullName": fullName,
+        "created_at": now.strftime(f"%Y-%m-%dT%H:%M:%S.{microseconds}Z")
     }
     pending_conversations.insert_one(pending_conversation)
-    return pending_conversation["conversation_id"]
+    return pending_conversation["conversationId"]
 
 def add_message(conversation_Id, message, sender ,receiver):
+    now = datetime.utcnow()
+    microseconds = now.microsecond
+    microseconds = f"{microseconds:06d}"  
+    microseconds = microseconds + '7'
     message_doc = {
         "status": 0,
         "message": message,
         "conversation_id": conversation_Id,
         "sender": sender,
         "receiver": receiver,
-        "created_at": datetime.utcnow()
+        "create_at": now.strftime(f"%Y-%m-%dT%H:%M:%S.{microseconds}Z")
     }
     messages.insert_one(message_doc)
 
@@ -93,7 +105,25 @@ def send_message():
 def api_add_pending_conversation():
     data = request.json
     conversation_id = add_pending_conversation(data['status'], data['user_Id'], data['fullName'])
-    return jsonify({"conversation_id": str(conversation_id)})
+    consultant_id = '675461fbf87f485f45b118a6'  
+    external_api_url = f'https://localhost:7230/api/conversations/notify'
+    payload = {
+        'conversationId': str(conversation_id), 
+        'consultantId': consultant_id
+    }
+    try:
+        response = requests.post(external_api_url, json=payload, verify=False)  # Disable SSL verification
+        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
+        external_api_response = response.json()
+    except requests.exceptions.HTTPError as http_err:
+        external_api_response = {'error': f'HTTP error occurred: {http_err}', 'status_code': response.status_code, 'response_text': response.text}
+    except Exception as err:
+        external_api_response = {'error': f'Other error occurred: {err}'}
+
+    return jsonify({
+        "conversation_Id": str(conversation_id),
+        "external_api_response": external_api_response
+    })
 
 @app.route('/add_message', methods=['POST'])
 def api_add_message():
