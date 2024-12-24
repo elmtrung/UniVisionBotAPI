@@ -17,15 +17,15 @@ messages = db['Message']
 visitor_collection = db['Visitor']
 app_users = db['appUsers']
 
-# tokens = {
-#     'p-b': 'ToDAkUbHxfsHWu1fGpz_cA%3D%3D',
-#     'p-lat': 'afGkUC17qGhaRPWctFWPOT7Ryg7nPvCemYA8iICo7g%3D%3D',
-# }
-
 tokens = {
-    'p-b': 'iOVFeQwIx-o_FJ81yRbYGw%3D%3D',
-    'p-lat': 'xJgVOZVXrN4b0HCALLUzvi22WVBQovclTR0SuhqnXw%3D%3D',
+    'p-b': 'ToDAkUbHxfsHWu1fGpz_cA%3D%3D',
+    'p-lat': 'afGkUC17qGhaRPWctFWPOT7Ryg7nPvCemYA8iICo7g%3D%3D',
 }
+
+# tokens = {
+#     'p-b': 'iOVFeQwIx-o_FJ81yRbYGw%3D%3D',
+#     'p-lat': 'xJgVOZVXrN4b0HCALLUzvi22WVBQovclTR0SuhqnXw%3D%3D',
+# }
 # tokens = {
 #     'p-b': 'ToDAkUbHxfsHWu1fGpz_cA%3D%3D',
 #     'p-lat': 'UknZG4i92rDKkkVbSSwnQSUReu2yW%2FoRlee73XKn8g%3D%3D',
